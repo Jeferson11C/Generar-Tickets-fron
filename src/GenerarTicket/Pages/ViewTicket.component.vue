@@ -1,4 +1,6 @@
 <script>
+import ApiService from '../services/ticket-api.service';
+
 export default {
   name: "ViewTicket",
   data() {
@@ -6,11 +8,23 @@ export default {
       ticket: null
     };
   },
-  created() {
-    // Retrieve the generated ticket from localStorage
-    const storedTicket = localStorage.getItem('generatedTicket');
-    if (storedTicket) {
-      this.ticket = JSON.parse(storedTicket);
+  async created() {
+    try {
+      // Obtener todos los tickets
+      const response = await ApiService.getTickets();
+      const tickets = response.data;
+
+      // Obtener el último ticket generado
+      if (tickets.length > 0) {
+        this.ticket = tickets[tickets.length - 1];
+      }
+    } catch (error) {
+      console.error('Error al obtener los tickets:', error);
+    }
+  },
+  methods: {
+    volver() {
+      this.$router.push('/');
     }
   }
 }
@@ -21,12 +35,15 @@ export default {
   <div>
     <h2>Ticket Generado</h2>
     <div v-if="ticket">
-      <h3>Área: {{ ticket.area }}</h3>
-      <p>Nombre: {{ ticket.persona }}</p>
-      <p>Número de Ticket: {{ ticket.number }}</p>
-      <p>Fecha: {{ ticket.date }}</p>
+      <h3>Área: {{ ticket.areaNombre }}</h3>
+      <p>Nombre: {{ ticket.nombres }} {{ ticket.apePaterno }} {{ ticket.apeMaterno }}</p>
+      <p>Número de Ticket: {{ ticket.numeroTicket }}</p>
+      <p>Fecha: {{ ticket.fecha }}</p>
+      <p>Documento: {{ ticket.documento }}</p>
+      <p>Estado: {{ ticket.estado }}</p>
     </div>
     <p v-else>No hay ticket generado.</p>
+    <button @click="volver">Volver</button>
   </div>
 </template>
 
@@ -35,5 +52,11 @@ div {
   border: 1px solid #ccc;
   padding: 1em;
   margin-bottom: 1em;
+}
+
+button {
+  padding: 0.5em 1em;
+  font-size: 1em;
+  cursor: pointer;
 }
 </style>

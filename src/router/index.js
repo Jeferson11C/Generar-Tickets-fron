@@ -7,8 +7,8 @@ import ViewTicket from '../GenerarTicket/Pages/ViewTicket.component.vue';
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        { path: '/', component: GenerarTicket },
-        { path: '/view-ticket', component: ViewTicket },
+        { path: '/', component: GenerarTicket,  meta: { title: "Generar"} },
+        { path: '/view-ticket', component: ViewTicket,  meta: { title: "Ver Ticket"} },
 
     ]
 });

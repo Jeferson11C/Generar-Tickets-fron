@@ -1,64 +1,72 @@
 <script>
-import axios from 'axios';
+import ApiService from '../services/ticket-api.service';
 
 export default {
-  name: "GenerarTicket",
   data() {
     return {
+      dni: '',
+      persona: '',
       ticket: {
         area: '',
         number: '',
-        date: ''
+        date: '',
+        nombres: '',
+        apePaterno: '',
+        apeMaterno: '',
+        estado: 'En espera'
       },
-      persona: null,
-      dni: ''
+      areas: [],
+      tickets: []
     };
   },
+  async created() {
+    try {
+      const areasResponse = await ApiService.getAreas();
+      this.areas = areasResponse.data;
+      const ticketsResponse = await ApiService.getTickets();
+      this.tickets = ticketsResponse.data;
+    } catch (error) {
+      console.error('Error al cargar áreas o tickets:', error);
+    }
+  },
   methods: {
-    generarTicket() {
-      // Retrieve the last ticket number from localStorage
-      let lastTicketNumber = localStorage.getItem('lastTicketNumber');
-      lastTicketNumber = lastTicketNumber ? parseInt(lastTicketNumber) : 0;
+    async generarTicket() {
+      const requestData = {
+        documento: this.dni,
+        areaNombre: this.ticket.area
+      };
 
-      // Increment the ticket number
-      this.ticket.number = lastTicketNumber + 1;
+      try {
+        const response = await ApiService.createTicket(requestData);
+        const newTicket = response.data;
 
-      // Update the last ticket number in localStorage
-      localStorage.setItem('lastTicketNumber', this.ticket.number);
+        this.ticket.id = newTicket.id;
+        this.ticket.numeroTicket = newTicket.numeroTicket;
+        this.ticket.area = newTicket.area;
+        this.ticket.date = newTicket.fecha;
+        this.ticket.nombres = newTicket.nombres;
+        this.ticket.apePaterno = newTicket.apePaterno;
+        this.ticket.apeMaterno = newTicket.apeMaterno;
+        this.ticket.estado = newTicket.estado;
 
-      // Generate the current date
-      this.ticket.date = new Date().toLocaleString();
+        console.log('Ticket creado exitosamente');
+      } catch (error) {
+        console.error('Error al crear el ticket:', error);
+      }
 
-      // Store the generated ticket in localStorage
-      localStorage.setItem('generatedTicket', JSON.stringify({...this.ticket, persona: this.persona}));
-
-      // Clear the form
       this.ticket.area = '';
       this.ticket.number = '';
       this.ticket.date = '';
+      this.ticket.nombres = '';
+      this.ticket.apePaterno = '';
+      this.ticket.apeMaterno = '';
       this.dni = '';
       this.persona = '';
 
-      // Navigate to the view tickets page
       this.$router.push('/view-ticket');
-    },
-    async buscarPersona() {
-      try {
-        const response = await axios.post('https://apps.municieneguilla.gob.pe/node/api/xmldatospersonareniec', {
-          documento: this.dni
-        });
-        console.log('Respuesta de la API:', response.data);
-        if (response.data.ok) {
-          this.persona = response.data.data.Nombres;
-        } else {
-          console.error('Error en la respuesta de la API:', response.data.message);
-        }
-      } catch (error) {
-        console.error('Error al buscar persona:', error);
-      }
     }
   }
-}
+};
 </script>
 
 <template>
@@ -68,39 +76,100 @@ export default {
     <form @submit.prevent="generarTicket">
       <div>
         <label for="dni">DNI:</label>
-        <input type="text" id="dni" v-model="dni" @blur="buscarPersona" required/>
-      </div>
-      <div v-if="persona">
-        <p>Nombre: {{ persona }}</p>
+        <input type="text" id="dni" v-model="dni" required/>
       </div>
       <div>
         <label for="area">Área:</label>
-        <input type="text" id="area" v-model="ticket.area" required/>
+        <select id="area" v-model="ticket.area" required>
+          <option value="" disabled>Seleccione un área</option>
+          <option v-for="area in areas" :key="area.id" :value="area.nombre">{{ area.nombre }}</option>
+        </select>
       </div>
-      <pv-button type="submit">Generar Ticket :)</pv-button>
+      <pv-button type="submit">
+        <i class="pi pi-check-circle" style="font-size: 2.5rem"></i> Generar Ticket
+      </pv-button>
     </form>
   </div>
 </template>
 
 <style scoped>
+/* Container styles */
+:root {
+  --primary-color: #2563eb;
+  --text-color: #1f2937;
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+/* Form layout */
 form {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
-  gap: 1em;
+  gap: 1.5rem;
 }
 
+/* Input groups */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Labels */
 label {
-  font-weight: bold;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 0.95rem;
 }
 
-input, textarea {
-  padding: 0.5em;
-  font-size: 1em;
+/* Form controls */
+input, select {
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  width: 100%;
 }
 
-button {
-  padding: 0.5em 1em;
-  font-size: 1em;
-  cursor: pointer;
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Button styles */
+
+
+
+
+:deep(.p-button i) {
+  font-size: 1.25rem;
+}
+
+/* Title styles */
+h1 {
+  color: var(--text-color);
+  text-align: center;
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  form {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
 }
 </style>
