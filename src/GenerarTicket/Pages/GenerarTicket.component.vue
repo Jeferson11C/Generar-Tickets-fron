@@ -145,7 +145,19 @@ input:focus, select:focus {
 }
 
 /* Button styles */
-
+:deep(.p-button) {
+  background-color: var(--primary-color);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+  margin-top: 1rem;
+}
 
 
 
