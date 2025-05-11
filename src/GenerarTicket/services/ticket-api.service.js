@@ -1,5 +1,6 @@
 import http from '../../shared/services/http-common';
 
+
 export default {
     async getArea(id) {
         return http.get(`/api/area/${id}`);
@@ -11,8 +12,14 @@ export default {
         return http.post('/api/area', area);
     },
     async createTicket(ticket) {
-        return http.post('/api/ticket', ticket);
+        try {
+            return await http.post('/api/ticket', ticket);
+        } catch (error) {
+            console.error('Error creating ticket:', error.response ? error.response.data : error.message);
+            throw error;
+        }
     },
+
     async getTickets() {
         return http.get('/api/ticket');
     },

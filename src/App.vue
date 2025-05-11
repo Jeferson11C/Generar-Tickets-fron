@@ -12,9 +12,24 @@ export default {
 
 <style>
 #app {
-  max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+}
+</style>
+
+<style>
+:root {
+  height: 100%;
+  width: 100%;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  height: 100%;
 }
 </style>
